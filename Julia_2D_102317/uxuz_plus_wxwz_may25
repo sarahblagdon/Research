@@ -1,0 +1,97 @@
+using Plots
+
+function [ U, V, phi, F,delF,J,normphi, phiorig,k] =
+uxuz_plus_wxwz_weqH_may25(N,L,H,x,z,amp1,amp2,delphi,Ax,Bx,Cx,Dx,Ex,Fx)
+
+# Exclude the n=0 case because the mean should be at 0.
+
+phi = zeros(4*(N),1)
+phiorig = phi
+error = 1
+k=1
+
+#=
+cd UniqueFunctions
+unique_exp_2d[ N ]
+[ ~,~, ic ] = Get_C[ N ]
+unique_exp_2d_no0[ N ]
+[ ~,~, icno0 ] = Get_C_no0[ N ]
+cd ..
+
+#--------------------------------------------------------------------------
+# Create the for loop for the itterations of phi.
+# phi is the vector of A coeffs
+# B3 = 2/L int (cos * ...)
+# B4 = 2/L int (sin * ...)
+# B1 = -coth(2 n pi H/L) B3 ~ -B3
+# B2 = -coth(2 n pi H/L) B4 ~ -B4
+#--------------------------------------------------------------------------
+while error()>.001
+
+[A1,A2,A3,A4,B1,B2,B3,B4,u] = Create_Coeff_u_weqH[phi,N,H,L,x,amp1,amp2]
+cd PhiVals
+filename = sprintf("phi_#s.mat", num2str(k))
+save(filename, "phi")
+cd ..
+cd uVals
+filename = sprintf("u_#s.mat", num2str(k))
+save(filename, 'u')
+cd ..
+#--------------------------------------------------------------------------
+# This is the F[phi] v    ector.
+#--------------------------------------------------------------------------
+[F] = CreateF_uxuz_Plus_wxwz_2D_weqH_Aug29sum(k,A1,A2,A3,A4,B1,B2,B3,B4,...
+  N,L,ic,icno0,Ax,Bx,Cx,Dx,Ex,Fx)
+#--------------------------------------------------------------------------
+# Create the Jacobian Matrix.
+#--------------------------------------------------------------------------
+J = zeros(4*N,4*N)
+for i = 4*N:-1:1
+  phi_dx = phi
+  phi_dx[i]= phi_dx[i]+delphi
+  [dA1,dA2,dA3,dA4,dB1,dB2,dB3,dB4,du] = Create_Coeff_u_weqH[phi_dx,N,H,L,x,amp1,amp2]
+
+  [delF] = CreateF_uxuz_Plus_wxwz_2D_weqH_Aug29sum(k,dA1,dA2,dA3,dA4,dB1,dB2,dB3,dB4,...
+    N,L,ic,icno0,Ax,Bx,Cx,Dx,Ex,Fx)
+  J[:,i] = (delF - F)/delphi
+
+
+#         plot(F,"b','Linewidth",2)
+#         axis([0,4*N,-1,1])
+#         hold on
+#         plot(delF, "ro', 'Linewidth",2)
+#          legend("F','delF")
+#         drawnow()
+#         hold off
+#         pause()
+end
+#--------------------------------------------------------------------------
+# Use Newton's Method to find the next itteration of phi (the coefficients)
+# then set the new coefficients, phi[:,2] equal to phi[:,1] to get ready
+# for the next itteration.
+#--------------------------------------------------------------------------
+
+phi_new= -(J)\F+ phi
+normphi[k] = norm(phi_new-phi)
+error = normphi[k]
+phi = phi_new
+k=k+1
+# hold all()
+# plot(phi)
+# drawnow()
+end
+#--------------------------------------------------------------------------
+# Create u and v.
+#--------------------------------------------------------------------------
+cd PhiVals
+filename = sprintf("phi_#s.mat", num2str(k))
+save(filename, "phi")
+cd ..
+cd uVals
+filename = sprintf("u_#s.mat", num2str(k))
+save(filename, 'u')
+cd ..
+
+[ U V ] = createUV_2D(A1,A2,A3,A4,B1,B2,B3,B4,...
+  x,z,N,L)
+end

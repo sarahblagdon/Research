@@ -1,0 +1,162 @@
+module OrthogFuncs
+function  cos_cos_cos( N, L)
+# The function to determine the coefficients when we have a
+# cos(jx)cos(mx)cos(px) or cos(ky)cos(ny)cos(qy)term.
+A=zeros(Float64, N+1, N+1,N+1)
+for j=0:N
+   for m = 0:N
+      for p = 0:N
+        sump=0;
+        if j == -m-p
+            sump=sump+L/4;
+        end
+        if j == p-m
+            sump=sump+L/4;
+        end
+        if j == m-p
+            sump=sump+L/4;
+        end
+        if j ==  m+p
+            sump=sump+L/4;
+        end
+        A[m+1,p+1,j+1] = sump;
+      end
+   end
+end
+return A
+end
+
+function  cos_sin_sin( N, L )
+# The function to determine the coefficients when we have a
+# cos(jx)sin(mx)sin(px) or cos(ky)sin(ny)sin(qy)term.
+A = zeros(Float64,N+1,N+1,N+1)
+for j=0:N
+   for m = 0:N
+      for p = 0:N
+        sump=0;
+        if j == -m-p
+            sump=sump-L/4;
+        end
+        if j == p-m
+            sump=sump+L/4;
+        end
+        if j == m-p
+            sump=sump+L/4;
+        end
+        if j ==  m+p
+            sump=sump-L/4;
+        end
+        A[m+1,p+1,j+1] = sump;
+      end
+   end
+end
+return A
+end
+
+function  sin_cos_sin( N, L )
+# The function to determine the coefficients when we have a
+# sin(jx)cos(mx)sin(px) or sin(ky)cos(ny)sin(qy)term.
+A = zeros(Float64,N+1,N+1,N+1)
+for j=0:N
+   for m = 0:N
+      for p = 0:N
+        sump=0;
+        if j == -m-p
+            sump=sump-L/4;
+        end
+        if j == p-m
+            sump=sump+L/4;
+        end
+        if j == m-p
+            sump=sump-L/4;
+        end
+        if j ==  m+p
+            sump=sump+L/4;
+        end
+        A[m+1,p+1,j+1] = sump;
+      end
+   end
+end
+return A
+end
+
+function  sin_sin_cos( N, L )
+# The function to determine the coefficients when we have a
+# sin(jx)cos(mx)sin(px) or sin(ky)cos(ny)sin(qy)term.
+A = zeros(Float64,N+1,N+1,N+1)
+for j=0:N
+   for m = 0:N
+      for p = 0:N
+        sump=0;
+        if j == -m-p
+            sump=sump-L/4;
+        end
+        if j == p-m
+            sump=sump-L/4;
+        end
+        if j == m-p
+            sump=sump+L/4;
+        end
+        if j ==  m+p
+            sump=sump+L/4;
+        end
+        A[m+1,p+1,j+1] = sump;
+      end
+   end
+end
+return A
+end
+
+function cos_cos( N, L )
+# The function to determine the coefficients when we have a
+# cos(jx)cos(px) or cos(ky)cos(qy)term.
+A=zeros(Float64, N+1, N+1,N+1)
+for j=0:N
+   for m = 0:N
+      for p = 0:N
+        sump=0;
+        if j==p && j==0
+            sump=sump+L/2;
+         end
+       if j==p
+         sump = sump+L/2;
+      end
+        A[m+1,p+1,j+1] = sump;
+      end
+   end
+end
+
+return A
+end
+
+function sin_sin( N, L )
+# The function to determine the coefficients when we have a
+# sin(jx)sin(px) or sin(ky)sin(qy)term.
+A=zeros(Float64, N+1, N+1,N+1)
+for j=0:N
+   for m = 0:N
+      for p = 0:N
+        sump=0;
+        if j == p
+            sump=sump+L/2;
+        end
+        A[m+1,p+1,j+1] = sump;
+      end
+   end
+end
+return A
+end
+
+function OrthogMult_2D(N,Lx)
+# Create all combinations of the multiplication of orthogonal functions.
+Ax = sin_cos_sin( N, Lx );
+Bx = cos_cos_cos( N, Lx );
+Cx = cos_sin_sin( N, Lx );
+Dx = sin_sin_cos( N, Lx );
+Ex = sin_sin(N,Lx);
+Fx = cos_cos(N,Lx);
+
+return Ax,Bx,Cx,Dx,Ex,Fx
+end
+
+end
